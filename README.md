@@ -1,8 +1,8 @@
-# Cheap Collaboration
+# Agent Delegation
 
 **Install one skill. Ask your coding agent to configure cost-aware delegation.**
 
-Cheap Collaboration ships a portable **agent skill** called `agent-delegation`. After installation, request setup in natural language. The skill prepares project-scoped, native leader/worker agents; there is no separate custom orchestration server.
+Agent Delegation ships a portable **agent skill** called `agent-delegation`. After installation, request setup in natural language. The skill prepares project-scoped, native leader/worker agents; there is no separate custom orchestration server.
 
 | Environment | Leader / reviewer | Bounded executor | Runtime |
 | --- | --- | --- | --- |
