@@ -69,7 +69,7 @@ class SetupTests(unittest.TestCase):
         self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
         result = self.claude_preflight()
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("NOT verified", result.stdout.upper().replace("NOT VERIFIED", "NOT verified"))
+        self.assertIn("NOT verified", result.stdout)
 
     def test_claude_preflight_refuses_local_endpoint_without_disclosure(self):
         self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
