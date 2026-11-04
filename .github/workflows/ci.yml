@@ -1,0 +1,29 @@
+name: Validate Cheap Collaboration
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Compile source
+        run: python -m compileall -q skills/agent-delegation/scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.20.0"
+      - name: Discover agent skill with skills CLI
+        env:
+          DISABLE_TELEMETRY: "1"
+        run: |
+          npx --yes skills@1.7.6 add . --list | tee /tmp/skill-discovery.txt
+          grep -q 'agent-delegation' /tmp/skill-discovery.txt
