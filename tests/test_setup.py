@@ -107,6 +107,25 @@ class SetupTests(unittest.TestCase):
         self.assertIn("isolation: worktree",
                       (self.target / ".claude/agents/delegated-executor.md").read_text())
 
+    def test_copied_skill_installs_from_outside_source_tree(self):
+        import shutil
+
+        installed = self.temp / ".agents" / "skills" / "agent-delegation"
+        shutil.copytree(ROOT / "skills" / "agent-delegation", installed)
+        copied_script = installed / "scripts" / "setup.py"
+
+        for command, extra in (("setup", ["--apply"]), ("check", [])):
+            result = subprocess.run(
+                [sys.executable, str(copied_script), command, "--platform", "claude",
+                 "--target", str(self.target), *extra],
+                cwd=self.temp,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        self.assertTrue((self.target / ".claude/agents/delegated-executor.md").exists())
+
     def test_custom_models_project_scoped(self):
         self.assertEqual(self.invoke("setup", "--platform", "codex", "--apply").returncode, 0)
         original = (self.target / ".codex/config.toml").read_bytes()
