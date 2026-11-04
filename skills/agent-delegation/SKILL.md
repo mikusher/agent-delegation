@@ -1,15 +1,15 @@
 ---
 name: agent-delegation
-description: Install or configure project-scoped leader/worker coding agent delegation for Codex (Sol/Terra), Claude Code (Opus/Haiku), or DeepSeek (Pro/Flash through Claude Code). Use when asked to install Cheap Collaboration, initialize delegation, switch models or validate an existing agent setup.
+description: Install or configure project-scoped leader/worker coding agent delegation for Codex (Sol/Terra), Claude Code (Opus/Haiku), or DeepSeek (Pro/Flash through Claude Code). Use when asked to install Agent Delegation, initialize delegation, switch models or validate an existing agent setup.
 ---
 
-# Cheap Collaboration — Agent Delegation
+# Agent Delegation — Agent Delegation
 
 This is an **installable agent skill**. It configures native project-level subagents; it is not a custom runtime, an authorization bypass, or an account-level settings manager.
 
 ## What the user can ask
 
-- "Install Cheap Collaboration from mikusher/agent-delegation for my coding agent."
+- "Install Agent Delegation from mikusher/agent-delegation for my coding agent."
 - "Use agent-delegation to set up this Codex project (Sol leader, Terra worker)."
 - "Set up Claude Code with Opus planning and Haiku implementing."
 - "Set up DeepSeek Pro/Flash with a supported Claude Code-compatible harness."
