@@ -19,13 +19,13 @@ Requires **Node.js 22.20+** for the optional `skills` CLI. Run the following in 
 **Codex:**
 
 ```bash
-npx skills add mikusher/cheap-collaboration --skill agent-delegation -a codex
+npx skills add mikusher/agent-delegation --skill agent-delegation -a codex
 ```
 
 **Claude Code** (also used as the DeepSeek-compatible harness):
 
 ```bash
-npx skills add mikusher/cheap-collaboration --skill agent-delegation -a claude-code
+npx skills add mikusher/agent-delegation --skill agent-delegation -a claude-code
 ```
 
 The installer offers an interactive choice of skill scope. Use `-g` to make the skill available for every project in your user account, or omit it to install into the current project. To disable CLI telemetry, prefix the command with `DISABLE_TELEMETRY=1` on a POSIX shell. Review the repository before executing third-party packages or giving an agent filesystem access.
@@ -36,7 +36,7 @@ The installer offers an interactive choice of skill scope. Use `-g` to make the 
 
 Paste this in Codex or Claude Code (no manual installation command required if that agent has approved shell/network tools):
 
-> Install the `agent-delegation` skill from https://github.com/mikusher/cheap-collaboration for this agent. First inspect the skill and its executable files. Prefer project scope, unless I explicitly request a user-wide installation. Show the planned files and ask before any install, configuration change or network execution. Do not overwrite existing skills or config files. After installation, configure the **current project** using the supported platform, show a dry-run, ask before applying, run checks and report which model IDs were actually verified in the client. Do not assume test success or provider access from config files alone.
+> Install the `agent-delegation` skill from https://github.com/mikusher/agent-delegation for this agent. First inspect the skill and its executable files. Prefer project scope, unless I explicitly request a user-wide installation. Show the planned files and ask before any install, configuration change or network execution. Do not overwrite existing skills or config files. After installation, configure the **current project** using the supported platform, show a dry-run, ask before applying, run checks and report which model IDs were actually verified in the client. Do not assume test success or provider access from config files alone.
 
 If the `skills` CLI is unavailable, an agent can instead clone the repository and copy the **entire** `skills/agent-delegation/` directory to a supported skill location. Copying only `SKILL.md` is **not sufficient**, because the skill includes a script and templates.
 
