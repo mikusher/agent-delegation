@@ -1,0 +1,8 @@
+# Project-scoped config; Codex loads this only in trusted projects.
+model = @@LEADER_JSON@@
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 3
+default_subagent_model = @@WORKER_JSON@@
+default_subagent_reasoning_effort = "medium"
