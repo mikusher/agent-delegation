@@ -1,4 +1,4 @@
-name: Validate Cheap Collaboration
+name: Validate Agent Delegation
 on:
   push:
   pull_request:

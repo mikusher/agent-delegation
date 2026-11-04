@@ -16,12 +16,12 @@ TEMPLATES = SKILL_DIR / "templates"
 MODEL_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$")
 DEFAULTS = {
     "codex": ("gpt-5.6-sol", "gpt-5.6-terra"),
-    "claude": ("opus", "haiku"),
+    "claude": ("claude-opus-5-5", "claude-haiku-5-5"),
     "deepseek": ("deepseek-v4-pro", "deepseek-flash"),
 }
 FILES = {
     "codex": ("AGENTS.md", ".codex/config.toml", ".codex/agents/delegated-executor.toml"),
-    "claude": (".claude/agents/delegated-executor.md", ".claude/rules/delegation.md", ".agent-delegation/run-claude.sh"),
+    "claude": (".claude/agents/delegated-executor.md", ".claude/rules/delegation.md", ".agent-delegation/run-claude.sh", ".agent-delegation/check-claude.py"),
     "deepseek": (".claude/agents/delegated-executor.md", ".claude/rules/delegation.md", ".agent-delegation/run-deepseek.sh"),
 }
 

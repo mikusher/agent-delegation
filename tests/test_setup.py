@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -47,8 +49,103 @@ class SetupTests(unittest.TestCase):
     def test_claude_install_and_check(self):
         self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
         self.assertEqual(self.invoke("check", "--platform", "claude").returncode, 0)
-        self.assertIn("model: haiku", (self.target / ".claude/agents/delegated-executor.md").read_text())
-        self.assertIn("claude --model opus", (self.target / ".agent-delegation/run-claude.sh").read_text())
+        self.assertIn("model: claude-haiku-5-5", (self.target / ".claude/agents/delegated-executor.md").read_text())
+        self.assertIn("claude --model claude-opus-5-5", (self.target / ".agent-delegation/run-claude.sh").read_text())
+        self.assertTrue((self.target / ".agent-delegation/check-claude.py").exists())
+
+    def claude_preflight(self, **overrides):
+        environment = os.environ.copy()
+        for key in list(environment):
+            if key.startswith("ANTHROPIC_") or key.startswith("CLAUDE_CODE_"):
+                environment.pop(key)
+        environment["HOME"] = str(self.temp)
+        environment.pop("CLAUDE_CONFIG_DIR", None)
+        environment.update(overrides)
+        checker = self.target / ".agent-delegation/check-claude.py"
+        return subprocess.run([sys.executable, str(checker)],
+                              cwd=self.target, env=environment, capture_output=True, text=True)
+
+    def test_claude_preflight_accepts_clean_environment(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        result = self.claude_preflight()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("NOT verified", result.stdout)
+
+    def test_claude_preflight_refuses_local_endpoint_without_disclosure(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        url = "http://127.0.0.1:9000/secret-local-endpoint"
+        result = self.claude_preflight(ANTHROPIC_BASE_URL=url)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("ANTHROPIC_BASE_URL", result.stderr)
+        self.assertNotIn(url, result.stderr)
+        self.assertNotIn("secret-local-endpoint", result.stderr)
+
+    def test_claude_launcher_blocks_wrong_provider_before_executing_cli(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        fake_bin = self.temp / "bin"
+        fake_bin.mkdir()
+        marker = self.temp / "cli-was-started"
+        fake = fake_bin / "claude"
+        fake.write_text("#!/bin/sh\nprintf 'started' > '" + str(marker) + "'\n")
+        fake.chmod(0o755)
+
+        environment = os.environ.copy()
+        for key in list(environment):
+            if key.startswith("ANTHROPIC_") or key.startswith("CLAUDE_CODE_"):
+                environment.pop(key)
+        environment.pop("CLAUDE_CONFIG_DIR", None)
+        environment["HOME"] = str(self.temp)
+        environment["ANTHROPIC_BASE_URL"] = "http://127.0.0.1:18080"
+        environment["PATH"] = str(fake_bin) + os.pathsep + environment.get("PATH", "")
+        launcher = self.target / ".agent-delegation/run-claude.sh"
+        result = subprocess.run(["sh", str(launcher)], cwd=self.target,
+                                env=environment, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("PREFLIGHT FAILED", result.stderr)
+        self.assertFalse(marker.exists())
+
+    def test_claude_preflight_refuses_jan_model_env_mapping(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        model = "janhq/Jan-code-4b-Q4_K_M"
+        result = self.claude_preflight(ANTHROPIC_DEFAULT_HAIKU_MODEL=model)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("ANTHROPIC_DEFAULT_HAIKU_MODEL", result.stderr)
+        self.assertNotIn(model, result.stderr)
+
+    def test_claude_preflight_refuses_model_mapping_in_user_settings(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        folder = self.temp / ".claude"
+        folder.mkdir()
+        (folder / "settings.json").write_text(
+            json.dumps({"env": {"ANTHROPIC_BASE_URL": "http://localhost:8080"}}))
+        result = self.claude_preflight()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("user settings", result.stderr)
+
+    def test_claude_preflight_refuses_model_overrides_in_project(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        folder = self.target / ".claude"
+        (folder / "settings.local.json").write_text(
+            json.dumps({"modelOverrides": {"claude-haiku-5-5": "local-model"}}))
+        result = self.claude_preflight()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("modelOverrides in project local settings", result.stderr)
+        self.assertNotIn("local-model", result.stderr)
+
+    def test_claude_preflight_rejects_other_provider_switch(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        result = self.claude_preflight(CLAUDE_CODE_USE_BEDROCK="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("CLAUDE_CODE_USE_BEDROCK", result.stderr)
+
+    def test_legacy_claude_install_is_not_silently_overwritten(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        path = self.target / ".claude/agents/delegated-executor.md"
+        path.write_text(path.read_text().replace("claude-haiku-5-5", "haiku"))
+        result = self.invoke("setup", "--platform", "claude", "--apply")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("CONFLICT", result.stdout)
+        self.assertIn("model: haiku", path.read_text())
 
     def test_deepseek_install_and_check(self):
         self.assertEqual(self.invoke("setup", "--platform", "deepseek", "--apply").returncode, 0)
