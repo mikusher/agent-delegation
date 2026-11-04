@@ -1,72 +1,106 @@
-# Cheap Collaboration — Agent Delegation Kit
+# Cheap Collaboration
 
-A project-scoped skill that sets up **strong leader + economical worker** collaboration in coding agents. It generates native project configuration, not a custom orchestration runtime.
+**Install one skill. Ask your coding agent to configure cost-aware delegation.**
 
-| Platform | Leader | Worker | Harness |
+Cheap Collaboration ships a portable **agent skill** called \`agent-delegation\`. After installation, request setup in natural language. The skill prepares project-scoped, native leader/worker agents; there is no separate custom orchestration server.
+
+| Environment | Leader / reviewer | Bounded executor | Runtime |
 | --- | --- | --- | --- |
-| Codex | GPT-5.6 Sol | GPT-5.6 Terra | Codex native subagents |
+| Codex | GPT-5.6 Sol | GPT-5.6 Terra | Codex native agents |
 | Claude Code | Opus | Haiku | Claude Code native subagents |
 | DeepSeek | V4 Pro | Flash | Claude Code via DeepSeek Anthropic-compatible API |
 
-## Quick start
+Model access depends on your provider, account, CLI version and supported configuration. The DeepSeek profile requires a Claude Code-compatible harness, not just a model endpoint.
 
-Python 3.10+ required. The target must be an existing directory. Run from the repository root.
+## Install the skill
 
-Preview (no writes):
+Requires **Node.js 22.20+** for the optional \`skills\` CLI. Run the following in your target project's directory.
 
-    python3 skills/agent-delegation/scripts/setup.py setup --platform codex --target /path/to/project
+**Codex:**
 
-Install project-local files:
+\`\`\`bash
+npx skills add mikusher/cheap-collaboration --skill agent-delegation -a codex
+\`\`\`
 
-    python3 skills/agent-delegation/scripts/setup.py setup --platform codex --target /path/to/project --apply
+**Claude Code** (also used as the DeepSeek-compatible harness):
 
-Verify generated configuration:
+\`\`\`bash
+npx skills add mikusher/cheap-collaboration --skill agent-delegation -a claude-code
+\`\`\`
 
-    python3 skills/agent-delegation/scripts/setup.py check --platform codex --target /path/to/project
+The installer offers an interactive choice of skill scope. Use \`-g\` to make the skill available for every project in your user account, or omit it to install into the current project. To disable CLI telemetry, prefix the command with \`DISABLE_TELEMETRY=1\` on a POSIX shell. Review the repository before executing third-party packages or giving an agent filesystem access.
 
-Choose --platform codex, claude, or deepseek. For Claude/DeepSeek in a Git working tree, --worktree adds native worktree isolation to the executor; use it consistently for setup and check.
+**After installing**, start/restart the coding-agent session if it does not discover the new skill immediately. The skill is not automatically applied to any project.
 
-The skill instructions are in skills/agent-delegation/SKILL.md. Do not configure this source repository as the target unless deliberately testing against a disposable copy.
+### Or ask the coding agent to install it
 
-## Generated project files
+Paste this in Codex or Claude Code (no manual installation command required if that agent has approved shell/network tools):
 
-Codex: AGENTS.md, .codex/config.toml, .codex/agents/delegated-executor.toml.
+> Install the \`agent-delegation\` skill from https://github.com/mikusher/cheap-collaboration for this agent. First inspect the skill and its executable files. Prefer project scope, unless I explicitly request a user-wide installation. Show the planned files and ask before any install, configuration change or network execution. Do not overwrite existing skills or config files. After installation, configure the **current project** using the supported platform, show a dry-run, ask before applying, run checks and report which model IDs were actually verified in the client. Do not assume test success or provider access from config files alone.
 
-Claude Code: .claude/rules/delegation.md, .claude/agents/delegated-executor.md, .agent-delegation/run-claude.sh.
+If the \`skills\` CLI is unavailable, an agent can instead clone the repository and copy the **entire** \`skills/agent-delegation/\` directory to a supported skill location. Copying only \`SKILL.md\` is **not sufficient**, because the skill includes a script and templates.
 
-DeepSeek: analogous Claude Code files plus .agent-delegation/run-deepseek.sh.
+- Codex project: \`.agents/skills/agent-delegation/\`
+- Codex user: \`~/.agents/skills/agent-delegation/\`
+- Claude Code project: \`.claude/skills/agent-delegation/\`
+- Claude Code user: \`~/.claude/skills/agent-delegation/\`
 
-Claude Code launcher: from the target directory, run sh .agent-delegation/run-claude.sh.
+Never execute \`curl | sh\` or apply unreviewed remote installation scripts.
 
-DeepSeek launcher: first set DEEPSEEK_API_KEY securely in your environment, then from the target directory run sh .agent-delegation/run-deepseek.sh. Do not commit credentials or paste real keys into scripts.
+## Use the installed skill
 
-DeepSeek Pro/Flash delegation relies on the provider's documented Anthropic-model mapping. Claude Code is the actual subagent harness. This project does not claim native delegation in the DeepSeek model API.
+In Claude Code, invoke \`/agent-delegation\`. In Codex, ask the agent to use the installed **agent-delegation** skill (on clients supporting explicit skill references, use \`$agent-delegation\`).
 
-## Non-destructive by design
+Example:
 
-- Dry-run is default; --apply creates missing files exclusively.
-- Existing files with conflicting content fail closed, including existing AGENTS.md and Codex config.
-- Generated files contain no tokens or secrets; user-level settings are untouched.
-- Symlink destination components are refused; this is not a hardened sandbox against concurrent malicious local actors.
-- Subagents inherit the host permissions; textual instructions are not isolation.
-- No implicit deployment, destructive actions, pushes or merges.
-- Static tests prove only installer behavior. Effective models, authorization, cost, quality and delegation must be verified in a real client.
+> Use agent-delegation to configure **this project** for Codex with Sol coordinating Terra. Preview changes and existing conflicts first. Once approved, apply only project-local files and verify the generated configuration. Then run a small read-only delegation smoke test if the runtime supports it.
 
-For every delegated task, the leader must set boundaries and acceptance criteria; workers return changed paths, executed checks, actual results, and unresolved risks. The leader verifies the combined result. Small or security-critical tasks need not be delegated.
+For Claude Code: ask for **Opus → Haiku**. For DeepSeek: ask for **V4 Pro → Flash through the Claude Code-compatible harness**.
 
-## Tests
+**Two distinct actions:** installing the skill only registers reusable instructions with your coding agent; activating it in a project creates the project-specific agent configuration. Neither is a deployment.
 
-    python3 -m unittest discover -s tests -v
-    python3 -m compileall -q skills/agent-delegation/scripts
+## Direct setup (optional)
 
-## Sources (verified 2026-11-04)
+A standalone Python 3.10+ installer is included for environments without agent skill support. When run from a checkout of this repository:
 
-- Codex custom subagents: https://learn.chatgpt.com/docs/agent-configuration/subagents
-- Codex config: https://learn.chatgpt.com/docs/config-file/config-reference
-- Claude Code subagents: https://code.claude.com/docs/en/sub-agents
-- GPT-5.6 Sol: https://developers.openai.com/api/docs/models/gpt-5.6-sol
-- GPT-5.6 Terra: https://developers.openai.com/api/docs/models/gpt-5.6-terra
-- DeepSeek Claude Code: https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code/
-- DeepSeek Anthropic mapping: https://api-docs.deepseek.com/guides/anthropic_api/
+\`\`\`bash
+python3 skills/agent-delegation/scripts/setup.py setup --platform codex --target /path/to/project
+python3 skills/agent-delegation/scripts/setup.py setup --platform codex --target /path/to/project --apply
+python3 skills/agent-delegation/scripts/setup.py check --platform codex --target /path/to/project
+\`\`\`
 
-No affiliation with OpenAI, Anthropic, or DeepSeek. MIT licensed.
+\`--platform\` accepts \`codex\`, \`claude\`, \`deepseek\`. Optional \`--worktree\` is for Claude-compatible agents when the target is a Git worktree. \`--leader-model\` and \`--worker-model\` are available for Codex/Claude, while the DeepSeek provider mapping uses the documented model pair.
+
+From an **installed** skill, the agent must use the script next to that skill's \`SKILL.md\`: \`<installed-skill-dir>/scripts/setup.py\`. It must not assume the original repository is still present.
+
+### Files the configuration step creates
+
+- **Codex** — \`AGENTS.md\`, \`.codex/config.toml\`, \`.codex/agents/delegated-executor.toml\`.
+- **Claude Code** — \`.claude/rules/delegation.md\`, \`.claude/agents/delegated-executor.md\`, \`.agent-delegation/run-claude.sh\`.
+- **DeepSeek** — Claude-compatible files plus \`.agent-delegation/run-deepseek.sh\`.
+
+DeepSeek requires \`DEEPSEEK_API_KEY\` securely supplied in the environment; never commit real credentials. The generated launcher is for the CLI and does not set up the Claude Desktop GUI.
+
+## Safety and current validation
+
+The setup script defaults to **read-only preview**; \`--apply\` uses exclusive file creation and refuses conflicting contents. It does not edit account-level settings. It rejects symlinked paths found in the destination; this is not a sandbox against hostile concurrent local writers. Generated agent instructions cannot grant execution privileges.
+
+Offline tests verify install previews, idempotence, conflicts, models, and project-scoped generation. They do **not** prove model access, delegation execution, correctness, cost savings, or supported behavior on every CLI version. Verify actual model and agent metadata in a real coding-agent session.
+
+### Development
+
+\`\`\`bash
+python3 -m unittest discover -s tests -v
+python3 -m compileall -q skills/agent-delegation/scripts
+\`\`\`
+
+## References
+
+- [Agent Skills CLI](https://github.com/vercel-labs/skills) — optional install/discovery manager (Node.js 22.20+)
+- [Codex project skills location](https://developers.openai.com/api/reference/cli)
+- [Claude Code custom skills](https://code.claude.com/docs/en/skills)
+- [Claude Code subagents](https://code.claude.com/docs/en/sub-agents)
+- [DeepSeek Claude Code integration](https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code/)
+- [DeepSeek Anthropic-compatible API](https://api-docs.deepseek.com/guides/anthropic_api/)
+
+MIT licensed. Not affiliated with the model or agent providers.
