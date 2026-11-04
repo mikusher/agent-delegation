@@ -80,6 +80,30 @@ class SetupTests(unittest.TestCase):
         self.assertNotIn(url, result.stderr)
         self.assertNotIn("secret-local-endpoint", result.stderr)
 
+    def test_claude_launcher_blocks_wrong_provider_before_executing_cli(self):
+        self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
+        fake_bin = self.temp / "bin"
+        fake_bin.mkdir()
+        marker = self.temp / "cli-was-started"
+        fake = fake_bin / "claude"
+        fake.write_text("#!/bin/sh\nprintf 'started' > '" + str(marker) + "'\n")
+        fake.chmod(0o755)
+
+        environment = os.environ.copy()
+        for key in list(environment):
+            if key.startswith("ANTHROPIC_") or key.startswith("CLAUDE_CODE_"):
+                environment.pop(key)
+        environment.pop("CLAUDE_CONFIG_DIR", None)
+        environment["HOME"] = str(self.temp)
+        environment["ANTHROPIC_BASE_URL"] = "http://127.0.0.1:18080"
+        environment["PATH"] = str(fake_bin) + os.pathsep + environment.get("PATH", "")
+        launcher = self.target / ".agent-delegation/run-claude.sh"
+        result = subprocess.run(["sh", str(launcher)], cwd=self.target,
+                                env=environment, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("PREFLIGHT FAILED", result.stderr)
+        self.assertFalse(marker.exists())
+
     def test_claude_preflight_refuses_jan_model_env_mapping(self):
         self.assertEqual(self.invoke("setup", "--platform", "claude", "--apply").returncode, 0)
         model = "janhq/Jan-code-4b-Q4_K_M"
