@@ -21,35 +21,35 @@ This is an **installable agent skill**. It configures native project-level subag
 
 When asked to install from GitHub, first review the source and the contained scripts. If network and shell access are available and authorized, you may propose the optional [skills CLI](https://github.com/vercel-labs/skills):
 
-- Codex: \`npx skills add mikusher/cheap-collaboration --skill agent-delegation -a codex\`
-- Claude/DeepSeek harness: \`npx skills add mikusher/cheap-collaboration --skill agent-delegation -a claude-code\`
+- Codex: `npx skills add mikusher/cheap-collaboration --skill agent-delegation -a codex`
+- Claude/DeepSeek harness: `npx skills add mikusher/cheap-collaboration --skill agent-delegation -a claude-code`
 
-The CLI requires Node.js 22.20+. Use project scope by default; request user permission before installation, global scope (\`-g\`), network execution, or edits. If the CLI is unavailable, copy this **whole skill directory** (\`SKILL.md\`, \`scripts/\`, \`templates/\`) into the coding agent's supported skills directory. Codex uses \`.agents/skills/\` and \`~/.agents/skills/\`; Claude Code uses \`.claude/skills/\` and \`~/.claude/skills/\`. Preserve existing files and do not copy only \`SKILL.md\`.
+The CLI requires Node.js 22.20+. Use project scope by default; request user permission before installation, global scope (`-g`), network execution, or edits. If the CLI is unavailable, copy this **whole skill directory** (`SKILL.md`, `scripts/`, `templates/`) into the coding agent's supported skills directory. Codex uses `.agents/skills/` and `~/.agents/skills/`; Claude Code uses `.claude/skills/` and `~/.claude/skills/`. Preserve existing files and do not copy only `SKILL.md`.
 
 Do not execute an unreviewed remote script, install anything silently, claim unsupported native capabilities, or treat the repository as the user's target project.
 
 ## Configure a target project
 
-Inputs: target directory, agent platform (\`codex\`, \`claude\`, \`deepseek\`), optional model overrides, optional \`--worktree\`, approval to make local project changes.
+Inputs: target directory, agent platform (`codex`, `claude`, `deepseek`), optional model overrides, optional `--worktree`, approval to make local project changes.
 
 1. Identify the **actual target project** and selected platform. Do not configure the skill source checkout or unrelated repositories by default.
 2. Check whether the coding-agent CLI/harness and model permissions are available; a documented ID is not proof of access.
-3. Resolve the directory containing **this installed SKILL.md**, then locate the sibling \`scripts/setup.py\` and \`templates/\`. Do not assume the original GitHub checkout exists or that current working directory is the skill directory.
-4. Inspect the target project's existing instructions, project settings and agent definitions. In particular, check for conflicts with \`AGENTS.md\` or \`.claude/\` rules.
-5. Execute a **preview only** (no \`--apply\`), show created/unchanged/conflicting paths and summarize side effects.
+3. Resolve the directory containing **this installed SKILL.md**, then locate the sibling `scripts/setup.py` and `templates/`. Do not assume the original GitHub checkout exists or that current working directory is the skill directory.
+4. Inspect the target project's existing instructions, project settings and agent definitions. In particular, check for conflicts with `AGENTS.md` or `.claude/` rules.
+5. Execute a **preview only** (no `--apply`), show created/unchanged/conflicting paths and summarize side effects.
 6. Request approval before applying. Stop on conflicts; never rewrite existing project configuration without a separate review.
-7. Run the matching \`check\` command; report static generation separately from real runtime validation.
+7. Run the matching `check` command; report static generation separately from real runtime validation.
 8. If supported, run a bounded, read-only delegation task in the actual client and inspect agent/model metadata and observed results. Do not claim success without running it.
 
-Replace \`<SKILL_DIR>\` with the absolute installed skill directory and \`<PROJECT>\` with the intended target:
+Replace `<SKILL_DIR>` with the absolute installed skill directory and `<PROJECT>` with the intended target:
 
-\`\`\`bash
+```bash
 python3 <SKILL_DIR>/scripts/setup.py setup --platform codex --target <PROJECT>
 python3 <SKILL_DIR>/scripts/setup.py setup --platform codex --target <PROJECT> --apply
 python3 <SKILL_DIR>/scripts/setup.py check --platform codex --target <PROJECT>
-\`\`\`
+```
 
-Select platform \`claude\` or \`deepseek\` as appropriate. Option \`--worktree\` applies only to Claude-compatible executors and requires a Git worktree. The DeepSeek configuration uses the provider's Pro/Flash mapping through Claude Code: DeepSeek model APIs alone do not create subagents.
+Select platform `claude` or `deepseek` as appropriate. Option `--worktree` applies only to Claude-compatible executors and requires a Git worktree. The DeepSeek configuration uses the provider's Pro/Flash mapping through Claude Code: DeepSeek model APIs alone do not create subagents.
 
 ## Runtime discipline
 
