@@ -9,7 +9,7 @@ This is an **installable agent skill**. It configures native project-level subag
 
 ## What the user can ask
 
-- "Install Cheap Collaboration from mikusher/cheap-collaboration for my coding agent."
+- "Install Cheap Collaboration from mikusher/agent-delegation for my coding agent."
 - "Use agent-delegation to set up this Codex project (Sol leader, Terra worker)."
 - "Set up Claude Code with Opus planning and Haiku implementing."
 - "Set up DeepSeek Pro/Flash with a supported Claude Code-compatible harness."
@@ -21,8 +21,8 @@ This is an **installable agent skill**. It configures native project-level subag
 
 When asked to install from GitHub, first review the source and the contained scripts. If network and shell access are available and authorized, you may propose the optional [skills CLI](https://github.com/vercel-labs/skills):
 
-- Codex: `npx skills add mikusher/cheap-collaboration --skill agent-delegation -a codex`
-- Claude/DeepSeek harness: `npx skills add mikusher/cheap-collaboration --skill agent-delegation -a claude-code`
+- Codex: `npx skills add mikusher/agent-delegation --skill agent-delegation -a codex`
+- Claude/DeepSeek harness: `npx skills add mikusher/agent-delegation --skill agent-delegation -a claude-code`
 
 The CLI requires Node.js 22.20+. Use project scope by default; request user permission before installation, global scope (`-g`), network execution, or edits. If the CLI is unavailable, copy this **whole skill directory** (`SKILL.md`, `scripts/`, `templates/`) into the coding agent's supported skills directory. Codex uses `.agents/skills/` and `~/.agents/skills/`; Claude Code uses `.claude/skills/` and `~/.claude/skills/`. Preserve existing files and do not copy only `SKILL.md`.
 
