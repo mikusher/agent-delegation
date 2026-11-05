@@ -107,6 +107,24 @@ If the old kit already installed `model: haiku` or a launcher with `--model opus
 
 The **DeepSeek** adapter intentionally uses Claude-family routing aliases inside its explicitly configured DeepSeek provider environment; its `opus` invocation is **not** a native Anthropic model selection.
 
+## Efficiency tooling and selective delegation
+
+Delegation starts at **zero workers**. The generated leader rules opt into one worker only when independent work is likely to save more total effort, context and cost than dispatch + verification. A second concurrent worker requires genuinely independent tasks; the generated executor rules forbid nested delegation. Model configuration is explicit, but a config file is not evidence that a client ran the requested model.
+
+The skill's **project setup is offline** and does not install third-party dependencies. If the user requests tooling setup, an agent with authorized shell/network access should perform this *once per actual execution environment*, **after reviewing existing installations**:
+
+| Tool | Detect before installing | If missing and installation is authorized | Worker verification |
+| --- | --- | --- | --- |
+| Ponytail | Check installed plugin/skill locations and the project's effective instructions | Prefer an already audited/pinned local copy. Otherwise review [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) and follow its platform-specific install instructions | Verify the worker loads the relevant Ponytail/YAGNI instructions; plugin hook inheritance is platform-dependent |
+| RTK (Rust Token Killer) | Run `rtk --version` **and** `rtk gain` to distinguish it from the unrelated Rust Type Kit | Review [rtk-ai/rtk](https://github.com/rtk-ai/rtk) and install the correct binary with a trusted package manager, e.g. `brew install rtk-ai/tap/rtk` on macOS. Initialize for the actual platform/scope using its documented `rtk init` flags, after inspecting existing hook configuration | In the worker environment, confirm `rtk gain` and that supported verbose commands can actually use the wrapper or hook |
+| Graphicy | **Unresolved name**: no validated coding-agent upstream/package is specified | **Do not guess or install**; request the exact official repository/package, review it, then add a supported integration | Only claim availability after checking the resolved tool in the worker environment |
+
+Use explicit RTK commands when hook-based interception is unavailable. RTK only filters supported command output; it does not automatically reduce every tool call or the entire model bill. For debugging, auth/security analysis and failed tests, inspect unfiltered logs if RTK filtering could hide decisive detail. RTK editions have different licenses; assess that before adding a project dependency.
+
+Install a tool at the smallest authorized scope and avoid overwriting existing hooks, settings or pinned vendor copies. Worker processes/worktrees may have different `PATH`, permissions or loaded skills. Do not assume propagation or repeat the full tool preflight for each task. If the user has not approved installation, report what is missing and continue with available safe behavior. Never run `curl | sh` without first inspecting and trusting the remote script.
+
+This repository has **no bundled Ponytail/RTK/Graphicy executables** and cannot install software on a user's machine through GitHub alone. Its static templates guide an authorized coding agent; successful tool setup requires an actual local runtime smoke test. Small diffs and compressed output must not replace root-cause investigation, trust-boundary checks or required tests.
+
 ## Safety and current validation
 
 The setup script defaults to **read-only preview**; `--apply` uses exclusive file creation and refuses conflicting contents. It does not edit account-level settings. It rejects symlinked paths found in the destination; this is not a sandbox against hostile concurrent local writers. Generated agent instructions cannot grant execution privileges.
