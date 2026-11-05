@@ -156,6 +156,32 @@ class SetupTests(unittest.TestCase):
         self.assertIn('ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY"', script)
         self.assertNotIn("sk-", script)
 
+    def test_cost_aware_rules_in_every_generated_profile(self):
+        for platform in ("codex", "claude", "deepseek"):
+            with self.subTest(platform=platform):
+                result = self.invoke("setup", "--platform", platform, "--apply")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                if platform == "codex":
+                    leader = (self.target / "AGENTS.md").read_text()
+                    worker = (self.target / ".codex/agents/delegated-executor.toml").read_text()
+                else:
+                    leader = (self.target / ".claude/rules/delegation.md").read_text()
+                    worker = (self.target / ".claude/agents/delegated-executor.md").read_text()
+                self.assertIn("default", leader.lower())
+                self.assertIn("Ponytail", leader)
+                self.assertIn("RTK", leader)
+                self.assertIn("Graphicy", leader)
+                self.assertIn("Ponytail", worker)
+                self.assertIn("RTK", worker)
+                self.assertIn("Graphicy", worker)
+                self.assertIn("No nested delegation", worker)
+                self.assertEqual(self.invoke("check", "--platform", platform).returncode, 0)
+                # Avoid cross-platform configuration conflicts in the shared fixture.
+                if platform != "deepseek":
+                    import shutil
+                    shutil.rmtree(self.target)
+                    self.target.mkdir()
+
     def test_idempotent_and_conflict_safe(self):
         self.assertEqual(self.invoke("setup", "--platform", "codex", "--apply").returncode, 0)
         self.assertEqual(self.invoke("setup", "--platform", "codex", "--apply").returncode, 0)

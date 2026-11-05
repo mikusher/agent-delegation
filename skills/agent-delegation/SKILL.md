@@ -68,6 +68,17 @@ If a previous setup contains `model: haiku` or the older `--model opus` launcher
 
 DeepSeek's explicit Anthropic-compatible **provider adapter** uses model-family aliases by design; it is not the native Anthropic profile. Do not apply the native-Anthropic endpoint guard to that configured DeepSeek launcher.
 
+## Cost and efficiency preflight
+
+**Do not start with delegation.** In each real coding task, compare direct execution with total delegation cost (worker setup, context transfer, runtime, retries and leader verification). Dispatch zero workers by default, one when a bounded independent task clearly benefits, and at most two for non-overlapping work. Never nest workers. For any delegation, name the effective configured model, minimal context, file ownership and acceptance evidence; verify runtime metadata if model identity matters.
+
+When the user requests efficiency tooling, check once per environment for:
+- **Ponytail:** prefer an installed, audited/pinned skill or official plugin. Verify the leader and each worker receive the minimal-code/YAGNI rules; do not assume hooks or skills propagate.
+- **RTK:** verify the correct Rust Token Killer with `rtk --version` and `rtk gain`, not merely a binary with the same name. If missing, review `rtk-ai/rtk`, then install and initialize for the actual agent and permitted scope after approval. Workers must verify effective RTK availability or use explicit supported RTK shell commands. Preserve raw diagnostic output when compressed data is insufficient for correctness or security.
+- **Graphicy:** the requested name alone does not identify a validated engineering tool. Do not invent a package, source, command or installation. Require its canonical upstream before integrating it.
+
+Do not silently update local pinned skills, overwrite hooks, or modify account-level settings. Check existing installations before proposing writes. Installing the agent-delegation skill is not installing these external tools. Project setup is deliberately offline; executable installation belongs to an explicitly authorized agent runtime with shell/network access. See the repository README for current upstream references and practical preflight steps.
+
 ## Runtime discipline
 
 The leader scopes and verifies work; economical workers investigate or implement only bounded changes. Every delegation needs clear file ownership, verifiable acceptance criteria and a result containing changed paths, executed checks, actual outcomes and residual risks. Avoid delegation for small tasks, high-risk approvals or expensive handoffs. Escalate repeated worker failures instead of retrying indefinitely.
